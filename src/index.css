@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+/* Que todo ocupe el alto completo */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Sin @apply, CSS “normal” */
+body {
+  margin: 0;
+  color: #ffffff; /* texto blanco global */
+  /* puedes dejar sin fondo, o poner uno de tu gusto */
+  /* background-color: #000000; */
+}
+
+/* Quitar el fondo blanco de autofill en Chrome/Edge */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0 1000px rgba(248, 113, 113, 0.8) inset;
+  -webkit-text-fill-color: #ffffff;
+}
