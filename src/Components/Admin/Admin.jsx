@@ -67,7 +67,7 @@ const Admin = () => {
     try {
       const response = await crud.GET(`/api/usuarios`);
 
-      console.log("Respuesta GET /api/usuarios:", response);
+      //console.log("Respuesta GET /api/usuarios:", response);
 
       if (response?.usuarios) {
         setUsuarios(response.usuarios);
@@ -173,6 +173,7 @@ const Admin = () => {
                       >
                         Actualizar
                       </button>
+                      
 
                       {/* ELIMINAR */}
                       <button

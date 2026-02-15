@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // ⬅ ICONOS AGREGADOS
+import crud from "../../conexiones/crud";
 
 // ---------- VALIDACIÓN ----------
 const schema = yup.object().shape({
@@ -40,75 +41,60 @@ const ActualizarUsuario = () => {
   });
 
   // ===========================================================
-  // 📌 CARGAR USUARIO
-  // ===========================================================
-  useEffect(() => {
-    const cargarUsuario = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return navigate("/");
+// 📌 CARGAR USUARIO
+// ===========================================================
+useEffect(() => {
+  const cargarUsuario = async () => {
+    try {
+      const response = await crud.GET(`/api/usuarios/${id}`);
 
-        const response = await fetch(
-          `http://localhost:4000/api/usuarios/${id}`,
-          {
-            headers: { "x-auth-token": token },
-          }
-        );
-
-        if (!response.ok) {
-          Swal.fire("Error", "No se pudo cargar el usuario", "error");
-          return;
-        }
-
-        const data = await response.json();
-
-        setValue("imagen", data.imagen);
-        setValue("nombre", data.nombre);
-        setValue("cargo", data.cargo);
-        setValue("email", data.email);
-        setValue("rol", data.rol);
-      } catch (err) {
-        Swal.fire("Error", "Hubo un problema al cargar el usuario", "error");
-      } finally {
-        setLoading(false);
+      if (response?.msg) {
+        Swal.fire("Error", response.msg || "No se pudo cargar el usuario", "error");
+        return;
       }
-    };
 
-    cargarUsuario();
-  }, [id, navigate, setValue]);
+      // 👇 Cargar valores en el formulario
+      setValue("imagen", response.imagen);
+      setValue("nombre", response.nombre);
+      setValue("cargo", response.cargo);
+      setValue("email", response.email);
+      setValue("rol", response.rol);
+
+    } catch (error) {
+      Swal.fire("Error", "Hubo un problema al cargar el usuario", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  cargarUsuario();
+}, [id, setValue, navigate]);
 
   // ===========================================================
   // 📌 ACTUALIZAR USUARIO
   // ===========================================================
-  const onSubmit = async (formData) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      // Si password viene vacía → no actualizar
-      if (!formData.password) delete formData.password;
-
-      const response = await fetch(`http://localhost:4000/api/usuarios/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-        return;
-      }
-
-      Swal.fire("Éxito", "Usuario actualizado correctamente", "success");
-      navigate("/admin");
-    } catch (error) {
-      Swal.fire("Error", "Error al actualizar el usuario", "error");
+  const actualizarUsuario = async (formData) => {
+  try {
+    // Si password viene vacía → no actualizar
+    if (!formData.password) {
+      delete formData.password;
     }
-  };
+
+    const response = await crud.PUT(`/api/usuarios/${id}`, formData);
+
+    if (response?.msg) {
+      Swal.fire("Error", response.msg || "No se pudo actualizar", "error");
+      return;
+    }
+
+    Swal.fire("Éxito", "Usuario actualizado correctamente", "success");
+    navigate("/admin");
+
+  } catch (error) {
+    Swal.fire("Error", "Error al actualizar el usuario", "error");
+  }
+};
+
 
   // ===========================================================
   // 📌 LOADING
@@ -139,7 +125,7 @@ const ActualizarUsuario = () => {
         </p>
 
         <div className="w-full max-w-sm bg-green-200 px-4 py-3 rounded-xl shadow-md border border-green-300">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          <form onSubmit={handleSubmit(actualizarUsuario)} className="space-y-2">
             {/* Imagen */}
             <div>
               <label className="uppercase text-gray-600 block text-[10px] font-bold">
@@ -225,6 +211,8 @@ const ActualizarUsuario = () => {
                 <option value="regular">Supervisor</option>
               </select>
             </div>
+
+            
 
             {/* Password con iconos */}
             <div className="relative">

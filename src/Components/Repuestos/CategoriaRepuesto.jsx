@@ -5,6 +5,7 @@ import * as yup from "yup";
 import Swal from "sweetalert2";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { useNavigate } from "react-router-dom";
+import crud from "../../conexiones/crud";
 
 // ---------- VALIDACIÓN ----------
 const schema = yup.object().shape({
@@ -30,47 +31,40 @@ const CategoriaRepuesto = () => {
   });
 
   // ===========================================================
-  // 📌 CREAR NUEVA CATEGORÍA
-  // ===========================================================
-  const onSubmit = async (formData) => {
-    try {
-      const token = localStorage.getItem("token");
+// 📌 CREAR NUEVA CATEGORÍA (CORREGIDO)
+// ===========================================================
+const crearCategoria = async (formData) => {
+  try {
+    const response = await crud.POST("/api/repuestos", formData);
 
-      const response = await fetch(
-        "http://localhost:4000/api/repuestos",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify(formData),
-        }
+    // ❌ Solo es error si el mensaje CONTIENE la palabra error
+    if (
+      response?.msg &&
+      response.msg.toLowerCase().includes("error")
+    ) {
+      Swal.fire(
+        "Error",
+        response.msg || "No se pudo crear la categoría",
+        "error"
       );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire(
-          "Error",
-          result.msg || "No se pudo crear la categoría",
-          "error"
-        );
-        return;
-      }
-
-      // 🔥 SweetAlert + redirección a AdminRepuestos.jsx
-      Swal.fire("Éxito", "Categoría creada correctamente ✔", "success").then(
-        () => {
-          navigate("/repuestos");
-        }
-      );
-
-      reset();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+      return;
     }
-  };
+
+    // ✅ ÉXITO REAL
+    Swal.fire(
+      "Éxito",
+      "Categoría creada correctamente ✔",
+      "success"
+    ).then(() => {
+      navigate("/repuestos"); // vuelve al panel
+    });
+
+    reset();
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
+
 
   // ===========================================================
   // 📌 VISTA FINAL
@@ -92,7 +86,7 @@ const CategoriaRepuesto = () => {
         {/* CUADRO CENTRADO */}
         <div className="flex flex-col justify-center items-center w-full">
           <div className="w-full max-w-md bg-green-200 px-6 py-5 rounded-xl shadow-lg border border-green-300">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(crearCategoria)} className="space-y-4">
               {/* Nombre */}
               <div>
                 <label className="uppercase text-gray-600 block text-xs font-bold">

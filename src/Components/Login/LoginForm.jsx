@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import crud from "../../../src/conexiones/crud";
-import swal from "sweetalert2";
+import crud from "../../conexiones/crud";
+import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
 
-// Validación
+// ================= VALIDACIÓN =================
 const schema = yup.object().shape({
   email: yup
     .string()
@@ -23,13 +22,7 @@ const schema = yup.object().shape({
 
 const Login = () => {
   const navigate = useNavigate();
-
   const [mostrarPassword, setMostrarPassword] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) navigate("/admin");
-  }, [navigate]);
 
   const {
     register,
@@ -41,26 +34,55 @@ const Login = () => {
 
   const ingresarCuenta = async (data) => {
     try {
-      const response = await crud.POST(`/api/auth`, data);
+      const response = await crud.POST("/api/auth", data);
 
       if (response.msg) {
-        swal.fire("Error", response.msg, "error");
+        Swal.fire("Error", response.msg, "error");
         return;
       }
 
-      const jwt = response.token;
-      localStorage.setItem("token", jwt);
+      const token = response.token;
+      const decoded = jwtDecode(token);
+      const usuario = decoded.usuario;
 
-      const decoded = jwtDecode(jwt);
-      const rol = decoded.usuario.rol.toLowerCase();
+      // 🔐 Guardar sesión
+      localStorage.setItem("token", token);
+      localStorage.setItem("usuario", JSON.stringify(usuario));
 
-      if (rol === "admin") navigate("/admin");
-      else navigate("/regular");
+      // 🔁 Redirección por rol
+      switch (usuario.rol) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "adminrep":
+          navigate("/repuestos");
+          break;
+        case "admindot":
+          navigate("/dotacion");
+          break;
+        case "adminlimp":
+          navigate("/limpieza");
+          break;
+        case "adminmant":
+          navigate("/mantencion");
+          break;
+        case "regular":
+          navigate("/repuestos");
+          break;
+        default:
+          Swal.fire(
+            "Error",
+            "Rol no reconocido. Contacte al administrador.",
+            "error",
+          );
+          localStorage.clear();
+      }
     } catch (error) {
-      swal.fire("Error", "Hubo un problema en la autenticación.", "error");
+      Swal.fire("Error", "Hubo un problema en la autenticación.", "error");
     }
   };
 
+  // ================= JSX =================
   return (
     <div className="min-h-screen w-full bg-login bg-cover bg-center relative flex items-center justify-center">
       {/* Overlay transparente */}

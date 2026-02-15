@@ -90,6 +90,7 @@ const CrearUsuario = () => {
 
         <div className="w-full max-w-sm bg-green-200 px-4 py-3 rounded-xl shadow-md border border-green-300">
           <form onSubmit={handleSubmit(crearUsuario)} className="space-y-2">
+            
             {/* Imagen */}
             <div>
               <label className="uppercase text-gray-600 block text-[10px] font-bold">

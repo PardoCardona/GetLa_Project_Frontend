@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { MdCategory } from "react-icons/md";
 import Swal from "sweetalert2";
+import crud from "../../conexiones/crud";
 
 const Repuestos = () => {
   const navigate = useNavigate();
@@ -12,10 +13,10 @@ const Repuestos = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  // Categorías TRepuestos
+  // Categorías
   const [categorias, setCategorias] = useState([]);
 
-  // Estado para modal
+  // Modal
   const [showModal, setShowModal] = useState(false);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
 
@@ -23,37 +24,28 @@ const Repuestos = () => {
   // 🔐 AUTENTICACIÓN
   // ---------------------------------------------------
   useEffect(() => {
-    const autenticarUsuario = () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsAuthenticated(false);
-        navigate("/");
-      }
-    };
-    autenticarUsuario();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthenticated(false);
+      navigate("/");
+    }
   }, [navigate]);
 
-  // Cargar categorías desde la API
+  // ---------------------------------------------------
+  // 📥 CARGAR CATEGORÍAS
+  // ---------------------------------------------------
   useEffect(() => {
-    fetchCategorias();
+    cargarCategorias();
   }, []);
 
-  const fetchCategorias = async () => {
+  const cargarCategorias = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const response = await crud.GET("/api/repuestos");
 
-      const response = await fetch("http://localhost:4000/api/repuestos", {
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCategorias(data.categorias);
+      if (response?.categorias) {
+        setCategorias(response.categorias);
       } else {
-        console.log("Error:", data.msg);
+        console.log("No se pudieron cargar categorías");
       }
     } catch (error) {
       console.log("Error:", error);
@@ -61,7 +53,7 @@ const Repuestos = () => {
   };
 
   // -------------------------------------------------------
-  // 🗑️ ELIMINAR CATEGORÍA
+  // 🗑️ ELIMINAR CATEGORÍA (CORREGIDO)
   // -------------------------------------------------------
   const eliminarCategoria = async (id) => {
     const confirm = await Swal.fire({
@@ -78,34 +70,30 @@ const Repuestos = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const response = await crud.DELETE(`/api/repuestos/${id}`);
 
-      const response = await fetch(
-        `http://localhost:4000/api/repuestos/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "x-auth-token": token,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", data.msg || "No se pudo eliminar", "error");
+      // ✅ SOLO ES ERROR SI EL MENSAJE REALMENTE ES ERROR
+      if (
+        response?.msg &&
+        response.msg.toLowerCase().includes("error")
+      ) {
+        Swal.fire("Error", response.msg, "error");
         return;
       }
 
-      Swal.fire("Eliminado", "Categoría eliminada correctamente", "success");
-      fetchCategorias();
+      Swal.fire(
+        "Eliminado",
+        "Categoría eliminada correctamente",
+        "success"
+      );
+      cargarCategorias();
     } catch (error) {
       Swal.fire("Error", "No se pudo conectar con el servidor", "error");
     }
   };
 
   // -------------------------------------------------------
-  // ✏️ ABRIR MODAL DE EDICIÓN
+  // ✏️ MODAL
   // -------------------------------------------------------
   const abrirModal = (categoria) => {
     setCategoriaEdit(categoria);
@@ -118,7 +106,7 @@ const Repuestos = () => {
   };
 
   // -------------------------------------------------------
-  // 💾 GUARDAR CAMBIOS DE EDICIÓN
+  // 💾 GUARDAR CAMBIOS
   // -------------------------------------------------------
   const guardarCambios = async () => {
     try {
@@ -152,14 +140,14 @@ const Repuestos = () => {
         "success"
       );
       cerrarModal();
-      fetchCategorias();
+      cargarCategorias();
     } catch (error) {
       Swal.fire("Error", "No se pudo conectar con el servidor", "error");
     }
   };
 
   // -------------------------------------------------------
-  // 📌 RENDERIZADO
+  // 📌 RENDER
   // -------------------------------------------------------
   const handleCrearCategoria = () => {
     navigate("/AdminRepuestos/categorias");
@@ -175,7 +163,6 @@ const Repuestos = () => {
         }`}
       >
         <div className="max-w-6xl mx-auto">
-          {/* Título */}
           <div className="relative mb-6 flex flex-col items-center">
             <p className="text-lime-900 font-bold text-2xl sm:text-3xl text-center italic">
               Lista Categorías de Repuestos
@@ -192,7 +179,6 @@ const Repuestos = () => {
             </button>
           </div>
 
-          {/* LISTADO */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-6">
             {categorias.length === 0 ? (
               <p className="col-span-full text-center text-gray-700">
@@ -216,21 +202,21 @@ const Repuestos = () => {
 
                   <div className="flex gap-2 mt-3 flex-wrap justify-center">
                     <button
-                      className="w-24 h-9 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                      className="w-24 h-9 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-700"
                       onClick={() => abrirModal(cat)}
                     >
                       ✏️ Editar
                     </button>
 
                     <button
-                      className="w-26 h-9 bg-red-500 text-white text-sm rounded-lg hover:bg-red-700 flex items-center justify-center"
+                      className="w-26 h-9 bg-red-500 text-white text-sm rounded-lg hover:bg-red-700"
                       onClick={() => eliminarCategoria(cat._id)}
                     >
                       🗑️ Eliminar
                     </button>
 
                     <button
-                      className="w-32 h-9 bg-green-700 text-white text-sm rounded-lg hover:bg-green-800 flex items-center justify-center"
+                      className="w-32 h-9 bg-green-700 text-white text-sm rounded-lg hover:bg-green-800"
                       onClick={() =>
                         navigate(`/AdminRepuestos/lista/${cat._id}`)
                       }
@@ -245,17 +231,13 @@ const Repuestos = () => {
         </div>
       </main>
 
-      {/* -------------------------------------------------------
-           MODAL DE EDICIÓN
-      ------------------------------------------------------- */}
       {showModal && (
-        <div className="fixed inset-0 bg-zinc-100/70 bg-opacity-40 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-zinc-100/70 flex justify-center items-center z-50">
           <div className="bg-green-500 p-6 rounded-xl shadow-lg w-96">
             <h2 className="text-center text-lg font-bold mb-4 text-black">
               Editar Categoría
             </h2>
 
-            {/* Nombre */}
             <label className="font-semibold text-sm text-black">Nombre</label>
             <input
               type="text"
@@ -266,7 +248,6 @@ const Repuestos = () => {
               }
             />
 
-            {/* Imagen */}
             <label className="font-semibold text-sm text-black">
               URL Imagen
             </label>
