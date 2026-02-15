@@ -13,7 +13,7 @@ import { MdBuild, MdReceiptLong } from "react-icons/md";
 import { IoSettingsSharp } from "react-icons/io5";
 import { FiLogOut } from "react-icons/fi";
 import Swal from "sweetalert2";
-import logo from "../../assets/Logo_Getla.jpg";
+import logo from "../../assets/LOGOS-GREEN-ENERGY.png";
 import crud from "../../conexiones/crud";
 
 const SidebarAdmin = ({ isOpen, toggleSidebar }) => {
