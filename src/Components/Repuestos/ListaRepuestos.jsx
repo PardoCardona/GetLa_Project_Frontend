@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import Swal from "sweetalert2";
+import crud from "../../conexiones/crud";
 
 const ListaRepuestos = () => {
   const { categoriaId } = useParams();
@@ -44,36 +45,40 @@ const ListaRepuestos = () => {
   }, [categoriaId]);
 
   const fetchCategoria = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:4000/api/repuestos/${categoriaId}`,
-        { headers: { "x-auth-token": token } }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.msg);
-      setCategoria(data.categoria);
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+  try {
+    const data = await crud.GET(`/api/repuestos/${categoriaId}`);
+
+    if (!data?.categoria) {
+      throw new Error("No se pudo cargar la categoría");
     }
-  };
+
+    setCategoria(data.categoria);
+
+  } catch (error) {
+    Swal.fire("Error", error.message || "Error al cargar categoría", "error");
+  }
+};
+
 
   const fetchRepuestos = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:4000/api/productos-repuestos/categoria/${categoriaId}`,
-        { headers: { "x-auth-token": token } }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.msg);
-      setRepuestos(data || []);
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const data = await crud.GET(
+      `/api/productos-repuestos/categoria/${categoriaId}`
+    );
+
+    setRepuestos(data || []);
+
+  } catch (error) {
+    Swal.fire(
+      "Error",
+      error.message || "Error al cargar repuestos",
+      "error"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 📝 Form
   const handleChange = (e) => {
@@ -94,62 +99,65 @@ const ListaRepuestos = () => {
     setRepuestoEditId(null);
   };
 
+  
   // 🚀 Crear / Editar
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.referencia || !form.nombre || !form.imagen) {
-      Swal.fire(
-        "Campos obligatorios",
-        "Referencia, nombre e imagen son obligatorios",
-        "warning"
+  if (!form.referencia || !form.nombre || !form.imagen) {
+    Swal.fire(
+      "Campos obligatorios",
+      "Referencia, nombre e imagen son obligatorios",
+      "warning"
+    );
+    return;
+  }
+
+  try {
+    const body = {
+      referencia: form.referencia.trim(),
+      nombre: form.nombre.trim(),
+      descripcion: form.descripcion.trim(),
+      precio: Number(form.precio),
+      stock: Number(form.stock),
+      imagen: form.imagen.trim(),
+      estado: form.estado,
+      categoriaId,
+    };
+
+    let response;
+
+    if (isEdit) {
+      response = await crud.PUT(
+        `/api/productos-repuestos/${repuestoEditId}`,
+        body
       );
-      return;
+    } else {
+      response = await crud.POST(
+        `/api/productos-repuestos`,
+        body
+      );
     }
 
-    try {
-      const token = localStorage.getItem("token");
-
-      const url = isEdit
-        ? `http://localhost:4000/api/productos-repuestos/${repuestoEditId}`
-        : "http://localhost:4000/api/productos-repuestos";
-
-      const method = isEdit ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-        body: JSON.stringify({
-          referencia: form.referencia.trim(),
-          nombre: form.nombre.trim(),
-          descripcion: form.descripcion.trim(),
-          precio: Number(form.precio),
-          stock: Number(form.stock),
-          imagen: form.imagen.trim(),
-          estado: form.estado,
-          categoriaId,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.msg);
-
-      Swal.fire(
-        "Éxito",
-        isEdit ? "Repuesto actualizado" : "Repuesto creado",
-        "success"
-      );
-
-      setShowModal(false);
-      resetForm();
-      fetchRepuestos();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      throw new Error(response.msg);
     }
-  };
+
+    Swal.fire(
+      "Éxito",
+      isEdit ? "Repuesto actualizado" : "Repuesto creado",
+      "success"
+    );
+
+    setShowModal(false);
+    resetForm();
+    fetchRepuestos();
+
+  } catch (error) {
+    Swal.fire("Error", error.message || "Error al guardar", "error");
+  }
+};
+
 
   // ✏️ Editar
   const handleEditarRepuesto = (rep) => {
@@ -168,33 +176,34 @@ const ListaRepuestos = () => {
   };
 
   // 🗑️ Eliminar
-  const handleEliminarRepuesto = async (id) => {
-    const confirmacion = await Swal.fire({
-      title: "¿Eliminar repuesto?",
-      text: "Esta acción no se puede deshacer",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      cancelButtonText: "Cancelar",
-    });
+const handleEliminarRepuesto = async (id) => {
+  const confirmacion = await Swal.fire({
+    title: "¿Eliminar repuesto?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (!confirmacion.isConfirmed) return;
+  if (!confirmacion.isConfirmed) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:4000/api/productos-repuestos/${id}`,
-        { method: "DELETE", headers: { "x-auth-token": token } }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.msg);
-      Swal.fire("Eliminado", "Repuesto eliminado", "success");
-      fetchRepuestos();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+  try {
+    const response = await crud.DELETE(`/api/productos-repuestos/${id}`);
+
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      throw new Error(response.msg);
     }
-  };
+
+    Swal.fire("Eliminado", "Repuesto eliminado", "success");
+
+    fetchRepuestos();
+
+  } catch (error) {
+    Swal.fire("Error", error.message || "Error al eliminar", "error");
+  }
+};
 
   return (
     <div className="bg-gray-100 min-h-screen flex">
