@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { FaTshirt } from "react-icons/fa";
 import Swal from "sweetalert2";
+import crud from "../../conexiones/crud";
 
 const Dotacion = () => {
   const navigate = useNavigate();
@@ -41,67 +42,54 @@ const Dotacion = () => {
   }, []);
 
   const fetchCategorias = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.GET("/api/dotacion");
 
-      const response = await fetch("http://localhost:4000/api/dotacion", {
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCategorias(data.categorias);
-      } else {
-        console.log("Error: ", data.msg);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
+    if (response?.categorias) {
+      setCategorias(response.categorias);
+    } else if (response?.msg) {
+      console.log("Error:", response.msg);
+    } else {
+      console.log("No se pudieron cargar las categorías");
     }
-  };
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
 
   // ---------------------------------------------------
-  // 🗑️ ELIMINAR CATEGORÍA
-  // ---------------------------------------------------
-  const eliminarCategoria = async (id) => {
-    const confirm = await Swal.fire({
-      title: "¿Eliminar categoría?",
-      text: "Esta acción no se puede revertir",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
+// 🗑️ ELIMINAR CATEGORÍA
+// ---------------------------------------------------
+const eliminarCategoria = async (id) => {
+  const confirm = await Swal.fire({
+    title: "¿Eliminar categoría?",
+    text: "Esta acción no se puede revertir",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (!confirm.isConfirmed) return;
+  if (!confirm.isConfirmed) return;
 
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.DELETE(`/api/dotacion/${id}`);
 
-      const response = await fetch(`http://localhost:4000/api/dotacion/${id}`, {
-        method: "DELETE",
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", data.msg || "No se pudo eliminar", "error");
-        return;
-      }
-
-      Swal.fire("Eliminado", "Categoría eliminada", "success");
-      fetchCategorias();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      Swal.fire("Error", response.msg || "No se pudo eliminar", "error");
+      return;
     }
-  };
+
+    Swal.fire("Eliminado", "Categoría eliminada", "success");
+    fetchCategorias();
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
 
   // ---------------------------------------------------
   // ✏️ MODAL EDICIÓN
@@ -116,46 +104,38 @@ const Dotacion = () => {
     setCategoriaEdit(null);
   };
 
-  // -------------------------------------------------------
-  // 💾 GUARDAR CAMBIOS DE EDICIÓN
-  // -------------------------------------------------------
-  const guardarCambios = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:4000/api/dotacion/${categoriaEdit._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify({
-            nombre: categoriaEdit.nombre,
-            imagen: categoriaEdit.imagen,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-        return;
+ // -------------------------------------------------------
+// 💾 GUARDAR CAMBIOS DE EDICIÓN
+// -------------------------------------------------------
+const guardarCambios = async () => {
+  try {
+    const response = await crud.PUT(
+      `/api/dotacion/${categoriaEdit._id}`,
+      {
+        nombre: categoriaEdit.nombre,
+        imagen: categoriaEdit.imagen,
       }
+    );
 
-      Swal.fire(
-        "Actualizado",
-        "La categoría fue editada correctamente",
-        "success"
-      );
-      cerrarModal();
-      fetchCategorias();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      Swal.fire("Error", response.msg || "No se pudo actualizar", "error");
+      return;
     }
-  };
+
+    Swal.fire(
+      "Actualizado",
+      "La categoría fue editada correctamente",
+      "success"
+    );
+
+    cerrarModal();
+    fetchCategorias();
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
+
 
   // -------------------------------------------------------
   // 📌 RENDERIZADO

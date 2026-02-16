@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import Swal from "sweetalert2";
+import crud from "../../conexiones/crud";
 
 const ListaDotacion = () => {
   const { categoriaId } = useParams();
@@ -45,55 +46,42 @@ const ListaDotacion = () => {
   }, [categoriaId]);
 
   const fetchProductos = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.GET(
+      `/api/productos-dotacion/porcategoria/${categoriaId}`
+    );
 
-      const response = await fetch(
-        `http://localhost:4000/api/productos-dotacion/porcategoria/${categoriaId}`,
-        {
-          headers: {
-            "x-auth-token": token,
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al cargar productos");
-      }
-
-      setProductos(data.productos || data || []);
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
-    } finally {
-      setLoading(false);
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      throw new Error(response.msg);
     }
-  };
+
+    // Algunos endpoints devuelven { productos: [...] }
+    // otros devuelven directamente [...]
+    setProductos(response.productos || response || []);
+
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchCategoria = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.GET(`/api/dotacion/${categoriaId}`);
 
-      const response = await fetch(
-        `http://localhost:4000/api/dotacion/${categoriaId}`,
-        {
-          headers: {
-            "x-auth-token": token,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al cargar la categoría");
-      }
-
-      setCategoria(data);
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      throw new Error(response.msg);
     }
-  };
+
+    setCategoria(response);
+
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  }
+};
+
 
   // 📝 Manejo de formulario
   const handleChange = (e) => {
@@ -115,121 +103,109 @@ const ListaDotacion = () => {
     setProductoEditId(null);
   };
 
-  // 🚀 Crear / Editar
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    
+   // 🚀 Crear / Editar
+// 🚀 Crear / Editar
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.referencia || !form.nombre || !form.imagen) {
-      Swal.fire(
-        "Campos obligatorios",
-        "Referencia, nombre e imagen son obligatorios",
-        "warning"
-      );
-      return;
+  if (!form.referencia || !form.nombre || !form.imagen) {
+    Swal.fire(
+      "Campos obligatorios",
+      "Referencia, nombre e imagen son obligatorios",
+      "warning"
+    );
+    return;
+  }
+
+  try {
+
+    const body = {
+      referencia: form.referencia.trim(),
+      nombre: form.nombre.trim(),
+      talla: form.talla.trim(),
+      descripcion: form.descripcion.trim(),
+      precio: Number(form.precio),
+      stock: Number(form.stock),
+      imagen: form.imagen.trim(),
+      estado: form.estado,
+      categoriaId,
+    };
+
+    const response = isEdit
+      ? await crud.PUT(`/api/productos-dotacion/${productoEditId}`, body)
+      : await crud.POST(`/api/productos-dotacion`, body);
+
+    if (response?.msg) {
+      throw new Error(response.msg || "Error al guardar");
     }
 
-    try {
-      const token = localStorage.getItem("token");
+    Swal.fire(
+      "Éxito",
+      isEdit ? "Producto actualizado" : "Producto creado",
+      "success"
+    );
 
-      const url = isEdit
-        ? `http://localhost:4000/api/productos-dotacion/${productoEditId}`
-        : "http://localhost:4000/api/productos-dotacion";
+    setShowModal(false);
+    resetForm();
+    fetchProductos();
 
-      const method = isEdit ? "PUT" : "POST";
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  }
+};
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-        body: JSON.stringify({
-          referencia: form.referencia.trim(),
-          nombre: form.nombre.trim(),
-          talla: form.talla.trim(),
-          descripcion: form.descripcion.trim(),
-          precio: Number(form.precio),
-          stock: Number(form.stock),
-          imagen: form.imagen.trim(),
-          estado: form.estado,
-          categoriaId,
-        }),
-      });
+// ✏️ Editar  ✅ (NO SE TOCA)
+const handleEditar = (prod) => {
+  setIsEdit(true);
+  setProductoEditId(prod._id);
+  setForm({
+    referencia: prod.referencia,
+    nombre: prod.nombre,
+    talla: prod.talla,
+    descripcion: prod.descripcion || "",
+    precio: prod.precio,
+    stock: prod.stock,
+    imagen: prod.imagen,
+    estado: prod.estado,
+  });
+  setShowModal(true);
+};
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al guardar");
-      }
 
-      Swal.fire(
-        "Éxito",
-        isEdit ? "Producto actualizado" : "Producto creado",
-        "success"
-      );
-
-      setShowModal(false);
-      resetForm();
-      fetchProductos();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
-    }
-  };
-
-  // ✏️ Editar
-  const handleEditar = (prod) => {
-    setIsEdit(true);
-    setProductoEditId(prod._id);
-    setForm({
-      referencia: prod.referencia,
-      nombre: prod.nombre,
-      talla: prod.talla,
-      descripcion: prod.descripcion || "",
-      precio: prod.precio,
-      stock: prod.stock,
-      imagen: prod.imagen,
-      estado: prod.estado,
-    });
-    setShowModal(true);
-  };
-
+  
   // 🗑️ Eliminar
-  const handleEliminar = async (id) => {
-    const confirmacion = await Swal.fire({
-      title: "¿Eliminar producto?",
-      text: "Esta acción no se puede deshacer",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      cancelButtonText: "Cancelar",
-    });
+const handleEliminar = async (id) => {
+  const confirmacion = await Swal.fire({
+    title: "¿Eliminar producto?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (!confirmacion.isConfirmed) return;
+  if (!confirmacion.isConfirmed) return;
 
-    try {
-      const token = localStorage.getItem("token");
+  try {
 
-      const response = await fetch(
-        `http://localhost:4000/api/productos-dotacion/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "x-auth-token": token,
-          },
-        }
-      );
+    const response = await crud.DELETE(
+      `/api/productos-dotacion/${id}`
+    );
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.msg || "Error al eliminar");
-      }
-
-      Swal.fire("Eliminado", "Producto eliminado", "success");
-      fetchProductos();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      throw new Error(response.msg);
     }
-  };
+
+    Swal.fire("Eliminado", "Producto eliminado", "success");
+    fetchProductos();
+
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  }
+};
+
 
   return (
     <div className="bg-gray-100 min-h-screen flex">
