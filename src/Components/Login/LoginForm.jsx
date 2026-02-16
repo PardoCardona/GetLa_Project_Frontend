@@ -36,6 +36,9 @@ const Login = () => {
     try {
       const response = await crud.POST("/api/auth", data);
 
+      console.log("RESPONSE LOGIN:", response);
+
+
       if (response.msg) {
         Swal.fire("Error", response.msg, "error");
         return;
