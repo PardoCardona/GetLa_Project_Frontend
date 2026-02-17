@@ -5,6 +5,7 @@ import * as yup from "yup";
 import Swal from "sweetalert2";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { useNavigate } from "react-router-dom";
+import crud from "../../conexiones/crud";
 
 // ---------- VALIDACIÓN ----------
 const schema = yup.object().shape({
@@ -30,45 +31,36 @@ const CategoriaLimpieza = () => {
   });
 
   // ===========================================================
-  // 📌 CREAR NUEVA CATEGORÍA
-  // ===========================================================
-  const onSubmit = async (formData) => {
-    try {
-      const token = localStorage.getItem("token");
+// 📌 CREAR NUEVA CATEGORÍA
+// ===========================================================
+const onSubmit = async (formData) => {
+  try {
 
-      const response = await fetch("http://localhost:4000/api/aseo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token,
-        },
-        body: JSON.stringify(formData),
-      });
+    const result = await crud.POST("/api/aseo", formData);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire(
-          "Error",
-          result.msg || "No se pudo crear la categoría",
-          "error"
-        );
-        return;
-      }
-
+    if (result?.msg) {
       Swal.fire(
-        "Éxito",
-        "Categoría de dotación creada correctamente ✔",
-        "success"
-      ).then(() => {
-        navigate("/limpieza");
-      });
-
-      reset();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+        "Error",
+        result.msg || "No se pudo crear la categoría",
+        "error"
+      );
+      return;
     }
-  };
+
+    Swal.fire(
+      "Éxito",
+      "Categoría de dotación creada correctamente ✔",
+      "success"
+    ).then(() => {
+      navigate("/limpieza");
+    });
+
+    reset();
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
 
   // ===========================================================
   // 📌 VISTA
