@@ -36,8 +36,6 @@ const Login = () => {
     try {
       const response = await crud.POST("/api/auth", data);
 
-      console.log("RESPONSE LOGIN:", response);
-
 
       if (response.msg) {
         Swal.fire("Error", response.msg, "error");
@@ -240,6 +238,13 @@ const Login = () => {
           >
             Ingresar
           </button>
+
+          <p
+            onClick={() => navigate("/forgot-password")}
+            className="text-xs font-bold text-black cursor-pointer mt-2 hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </p>
         </form>
       </div>
 

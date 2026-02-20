@@ -46,6 +46,12 @@ import ListaDotacion from "./Components/Dotacion/ListaDotacion";
 import CategoriaLimpieza from "./Components/Limpieza/CategoriaLimpieza";
 import ListaLimpieza from "./Components/Limpieza/ListaLimpieza";
 
+// --------------------
+// Recuperacion_contraseña
+// --------------------
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
+
 function App() {
   return (
     <Router>
@@ -107,6 +113,10 @@ function App() {
         <Route path="/repuestos" element={<Repuestos />} />
         <Route path="/dotacion" element={<Dotacion />} />
         <Route path="/limpieza" element={<Limpieza />} />
+
+        {/* ==================== PANELES POR ÁREA ==================== */}
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );
