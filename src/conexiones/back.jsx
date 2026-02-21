@@ -1,6 +1,6 @@
 const back = {
   api: {
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+    baseURL: import.meta.env.VITE_API_URL || "https://getla-project-backend.onrender.com",
   },
 };
 
