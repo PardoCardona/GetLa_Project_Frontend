@@ -27,24 +27,30 @@ const ForgotPassword = () => {
   });
 
   const enviarEnlace = async (data) => {
-    try {
-      const response = await crud.POST("/api/auth/forgot-password", data);
+  try {
 
-      if (response.msg) {
-        Swal.fire("Error", response.msg, "error");
-        return;
-      }
+    await crud.POST("/api/auth/forgot-password", data);
 
-      Swal.fire(
-        "Éxito",
-        "Enlace de recuperación enviado a tu correo.",
-        "success",
-      );
-      navigate("/");
-    } catch (error) {
-      Swal.fire("Error", "Hubo un problema al enviar el enlace.", "error");
-    }
-  };
+    Swal.fire({
+      icon: "success",
+      title: "Solicitud enviada",
+      text: "Si el correo existe, te enviaremos un enlace de recuperación.",
+      confirmButtonColor: "#22c55e"
+    });
+
+    navigate("/");
+
+  } catch (error) {
+
+    Swal.fire({
+      icon: "info",
+      title: "Solicitud enviada",
+      text: "Si el correo existe, te enviaremos un enlace de recuperación.",
+      confirmButtonColor: "#22c55e"
+    });
+
+  }
+};
 
   // ================= JSX =================
   return (
