@@ -59,11 +59,11 @@ const Cabecera = () => {
   const cabecerasFiltradas = cabeceras.filter((cabecera) =>
     String(cabecera.nit || "")
       .toLowerCase()
-      .includes(busqueda.toLowerCase())
+      .includes(busqueda.toLowerCase()),
   );
 
   return (
-    <div className="bg-green-100 min-h-screen flex">
+    <div className="min-h-screen flex">
       {/* SIDEBAR */}
       <SidebarAdmin isOpen={isOpenSidebar} toggleSidebar={toggleSidebar} />
 
@@ -80,37 +80,35 @@ const Cabecera = () => {
               GESTIÓN DE CABECERAS
             </h1>
 
-            <button
-              onClick={() => setOpenCreateModal(true)}
-              className="flex items-center gap-2 bg-green-400 hover:bg-green-600 text-gray-900 font-bold px-4 py-2 rounded-xl"
-            >
-              Agregar Cabecera
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                className="w-full md:w-96 pl-4 pr-4 py-2 outline-none text-green-900 border rounded-md shadow"
+                placeholder="Buscar por NIT"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
+              <button
+                onClick={() => setOpenCreateModal(true)}
+                className="flex items-center gap-2 bg-green-400 hover:bg-green-600 text-gray-900 font-bold px-4 py-2 rounded-xl"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* BUSCADOR */}
-          <div className="p-4">
-            <input
-              type="text"
-              className="w-full md:w-96 pl-4 pr-4 py-2 outline-none text-green-900 border rounded-md shadow"
-              placeholder="Buscar por NIT"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
+                Agregar Cabecera
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* TABLA */}

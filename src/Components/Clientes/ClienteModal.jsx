@@ -20,7 +20,7 @@ const ClienteModal = ({
   ================================ */
   useEffect(() => {
     if (clienteState) {
-      setCliente({ ...clienteState }); // clonar objeto
+      setCliente({ ...clienteState });
     }
   }, [clienteState]);
 
@@ -121,60 +121,73 @@ const ClienteModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-        {/* Header */}
-        <div className="rounded-t-xl bg-lime-500 px-6 py-4">
-          <h2 className="text-center text-xl font-bold text-white">
-            Editar Cliente
-          </h2>
-        </div>
+      <div className="w-full max-w-md rounded-xl bg-green-200 shadow-xl">
+        {/* CONTENEDOR ÚNICO INTERNO */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleUpdate();
+          }}
+          className="p-6 space-y-6"
+        >
+          {/* HEADER */}
+          <div>
+            <h2 className="text-center text-xl font-bold text-gray-800">
+              Editar Cliente
+            </h2>
+          </div>
 
-        {/* Body */}
-        <div className="space-y-4 px-6 py-5">
-          {["nombre", "nit", "direccion", "ciudad", "telefono"].map((field) => (
-            <div key={field}>
-              <label className="mb-1 block text-sm font-semibold capitalize text-gray-700">
-                {field}
-              </label>
-              <input
-                type="text"
-                name={field}
-                value={cliente[field] || ""}
-                onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900
-                           focus:border-blue-500 focus:outline-none
-                           focus:ring-2 focus:ring-blue-200"
-              />
-            </div>
-          ))}
-        </div>
+          {/* BODY - FORMULARIO */}
+          <div className="space-y-4">
+            {["nombre", "nit", "direccion", "ciudad", "telefono"].map(
+              (field) => (
+                <div key={field}>
+                  <label className="mb-1 block text-sm font-semibold capitalize text-gray-700">
+                    {field}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    value={cliente[field] || ""}
+                    onChange={handleChange}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900
+                               focus:border-blue-500 focus:outline-none
+                               focus:ring-2 focus:ring-blue-200 transition"
+                  />
+                </div>
+              ),
+            )}
+          </div>
 
-        {/* Footer */}
-        <div className="flex flex-col gap-2 px-6 pb-6 sm:flex-row sm:justify-between">
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="w-full rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 sm:w-auto"
-          >
-            Eliminar
-          </button>
+          {/* FOOTER - 3 BOTONES */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="w-full rounded-lg bg-red-600 px-4 py-2 text-white 
+                         hover:bg-red-700 transition sm:w-auto"
+            >
+              Eliminar
+            </button>
 
-          <button
-            type="button"
-            onClick={changeModalCliente}
-            className="w-full rounded-lg bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400 sm:w-auto"
-          >
-            Cerrar
-          </button>
+            <button
+              type="button"
+              onClick={changeModalCliente}
+              className="w-full rounded-lg bg-gray-300 px-4 py-2 text-gray-800 
+                         hover:bg-gray-400 transition sm:w-auto"
+            >
+              Cerrar
+            </button>
 
-          <button
-            type="button"
-            onClick={handleUpdate}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 sm:w-auto"
-          >
-            Guardar Cambios
-          </button>
-        </div>
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white 
+                         hover:bg-blue-700 transition sm:w-auto"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

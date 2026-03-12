@@ -4,6 +4,7 @@ import SidebarAdmin from "../Sidebar/SidebarAdmin";
 import { MdCategory } from "react-icons/md";
 import Swal from "sweetalert2";
 import crud from "../../conexiones/crud";
+import FacturaModal from "../Facturas/FacturaModal";
 
 const Repuestos = () => {
   const navigate = useNavigate();
@@ -19,6 +20,14 @@ const Repuestos = () => {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
+
+  // Factura Modal
+  const [isModalFacturaOpen, setIsModalFacturaOpen] = useState(false);
+
+  // Leer usuario logueado
+  const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const usuarioNombre = usuarioGuardado?.nombre || "";
+  const usuarioRol = usuarioGuardado?.rol || "";
 
   // ---------------------------------------------------
   // 🔐 AUTENTICACIÓN
@@ -73,19 +82,12 @@ const Repuestos = () => {
       const response = await crud.DELETE(`/api/repuestos/${id}`);
 
       // ✅ SOLO ES ERROR SI EL MENSAJE REALMENTE ES ERROR
-      if (
-        response?.msg &&
-        response.msg.toLowerCase().includes("error")
-      ) {
+      if (response?.msg && response.msg.toLowerCase().includes("error")) {
         Swal.fire("Error", response.msg, "error");
         return;
       }
 
-      Swal.fire(
-        "Eliminado",
-        "Categoría eliminada correctamente",
-        "success"
-      );
+      Swal.fire("Eliminado", "Categoría eliminada correctamente", "success");
       cargarCategorias();
     } catch (error) {
       Swal.fire("Error", "No se pudo conectar con el servidor", "error");
@@ -124,7 +126,7 @@ const Repuestos = () => {
             nombre: categoriaEdit.nombre,
             imagen: categoriaEdit.imagen,
           }),
-        }
+        },
       );
 
       const result = await response.json();
@@ -137,7 +139,7 @@ const Repuestos = () => {
       Swal.fire(
         "Actualizado",
         "La categoría fue editada correctamente",
-        "success"
+        "success",
       );
       cerrarModal();
       cargarCategorias();
@@ -158,25 +160,35 @@ const Repuestos = () => {
       <SidebarAdmin isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
       <main
-        className={`flex-1 bg-green-300 p-4 sm:p-6 transition-all duration-300 ${
+        className={`flex-1 bg-green-300 p-2 sm:p-6 transition-all duration-300 ${
           isOpen ? "ml-48" : "ml-20"
         }`}
       >
         <div className="max-w-6xl mx-auto">
-          <div className="relative mb-6 flex flex-col items-center">
+          <div className="relative mb-6 flex flex-col items-center min-h-24 justify-center">
             <p className="text-lime-900 font-bold text-2xl sm:text-3xl text-center italic">
               Lista Categorías de Repuestos
             </p>
 
-            <button
-              onClick={handleCrearCategoria}
-              className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
-              gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600
-              sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2"
-            >
-              <MdCategory size={20} />
-              Crear Categoría
-            </button>
+            <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
+              
+              <button
+                onClick={() => setIsModalFacturaOpen(true)}
+                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+                            gap-2 text-white bg-blue-500 px-4 py-2 rounded-2xl hover:bg-blue-600"
+              >
+                🧾 Nueva Factura
+              </button>
+
+              <button
+                onClick={handleCrearCategoria}
+                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+                            gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600"
+              >
+                <MdCategory size={20} />
+                Crear Categoría
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-6">
@@ -277,6 +289,15 @@ const Repuestos = () => {
           </div>
         </div>
       )}
+
+      {/* ✅ Modal de Nueva Factura */}
+      <FacturaModal
+        isOpen={isModalFacturaOpen}
+        onClose={() => setIsModalFacturaOpen(false)}
+        onFacturaCreada={() => {}}
+        usuarioRol={usuarioRol}
+        usuarioNombre={usuarioNombre}
+      />
     </div>
   );
 };

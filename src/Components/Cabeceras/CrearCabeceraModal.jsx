@@ -3,13 +3,50 @@ import Modal from "react-modal";
 import Swal from "sweetalert2";
 import crud from "../../conexiones/crud";
 
-/* IMPORTANTE (una sola vez en tu app, normalmente en main.jsx o App.jsx)
-Modal.setAppElement("#root");
-*/
-
 const CrearCabeceraModal = ({ onClose, actualizarCabeceras }) => {
   /* ===============================
-     ESTADO DEL FORMULARIO
+     CONFIGURACIÓN DE CAMPOS
+  =============================== */
+  const campos = [
+    {
+      name: "local",
+      label: "Local",
+      type: "text",
+      placeholder: "Ej: Sede Centro",
+      required: true,
+    },
+    {
+      name: "nit",
+      label: "NIT",
+      type: "text",
+      placeholder: "Ej: 900123456-7",
+      required: true,
+    },
+    {
+      name: "direccion",
+      label: "Dirección",
+      type: "text",
+      placeholder: "Ej: Calle 10 # 5-30",
+      required: true,
+    },
+    {
+      name: "telefono",
+      label: "Teléfono",
+      type: "text",
+      placeholder: "Ej: 3001234567",
+      required: true,
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email",
+      placeholder: "Ej: contacto@empresa.com",
+      required: true,
+    },
+  ];
+
+  /* ===============================
+     ESTADOS
   =============================== */
   const [form, setForm] = useState({
     local: "",
@@ -19,54 +56,83 @@ const CrearCabeceraModal = ({ onClose, actualizarCabeceras }) => {
     email: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
 
   const getAuthToken = () => localStorage.getItem("token");
 
   /* ===============================
-     ALERTAS (SweetAlert2)
+     UTILIDADES
   =============================== */
-  const alertSuccess = (title, text) =>
-    Swal.fire({
-      icon: "success",
-      title,
-      text,
-      confirmButtonColor: "#16a34a", // green-600
-    });
+  const sanitizeInput = (name, value) => {
+    if (name === "telefono") {
+      return value.replace(/\D/g, ""); // Solo números
+    }
+    if (name === "nit") {
+      return value.replace(/[^0-9-]/g, "");
+    }
+    return value.trimStart();
+  };
 
-  const alertError = (title, text) =>
-    Swal.fire({
-      icon: "error",
-      title,
-      text,
-      confirmButtonColor: "#dc2626", // red-600
-    });
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+
+    if (!form.local.trim()) {
+      nuevosErrores.local = "El nombre del local es obligatorio.";
+    }
+
+    if (!form.nit.trim()) {
+      nuevosErrores.nit = "El NIT es obligatorio.";
+    } else if (!/^[0-9-]+$/.test(form.nit)) {
+      nuevosErrores.nit = "Formato de NIT inválido.";
+    }
+
+    if (!form.direccion.trim()) {
+      nuevosErrores.direccion = "La dirección es obligatoria.";
+    }
+
+    if (!form.telefono.trim()) {
+      nuevosErrores.telefono = "El teléfono es obligatorio.";
+    } else if (form.telefono.length < 7) {
+      nuevosErrores.telefono = "Teléfono inválido.";
+    }
+
+    if (!form.email.trim()) {
+      nuevosErrores.email = "El email es obligatorio.";
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(form.email)) {
+      nuevosErrores.email = "Formato de email inválido.";
+    }
+
+    setErrors(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
 
   /* ===============================
      HANDLERS
   =============================== */
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    const sanitized = sanitizeInput(name, value);
+
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: sanitized,
     }));
-  };
 
-  const validarCampos = () => {
-    const { local, nit, direccion, telefono, email } = form;
-    return local && nit && direccion && telefono && email;
+    // Limpiar error cuando el usuario escribe
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const handleSubmit = async () => {
-    if (!validarCampos()) {
-      setError("Todos los campos son obligatorios.");
-      return;
-    }
+    if (!validarFormulario()) return;
 
     setIsSaving(true);
-    setError("");
 
     try {
       const token = getAuthToken();
@@ -78,24 +144,28 @@ const CrearCabeceraModal = ({ onClose, actualizarCabeceras }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
-      // ✅ ALERTA DE ÉXITO
-      await alertSuccess(
-        "Cabecera creada",
-        "La cabecera fue creada correctamente."
-      );
+      await Swal.fire({
+        icon: "success",
+        title: "Cabecera creada",
+        text: "La cabecera fue creada correctamente.",
+        confirmButtonColor: "#16a34a",
+      });
 
       actualizarCabeceras();
       onClose();
     } catch (err) {
       const mensaje =
-        err.response?.data?.msg ||
-        "No se pudo crear la cabecera. Verifica el NIT.";
+        err.response?.data?.msg || "No se pudo crear la cabecera.";
 
-      setError(mensaje);
-      alertError("Error", mensaje);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: mensaje,
+        confirmButtonColor: "#dc2626",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -108,43 +178,59 @@ const CrearCabeceraModal = ({ onClose, actualizarCabeceras }) => {
     <Modal
       isOpen
       onRequestClose={onClose}
-      className="bg-green-100 rounded-lg p-6 max-w-md w-full mx-auto outline-none"
+      className="bg-green-100 rounded-xl p-6 max-w-md w-full mx-auto outline-none shadow-xl"
       overlayClassName="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
     >
-      <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+      <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
         Crear Cabecera
       </h2>
 
-      {/* FORMULARIO */}
-      <div className="space-y-3">
-        {["local", "nit", "direccion", "telefono", "email"].map((field) => (
-          <div key={field}>
-            <label className="block text-sm font-medium text-gray-700 capitalize">
-              {field}
+      <div className="space-y-4">
+        {campos.map((campo) => (
+          <div key={campo.name}>
+            <label
+              htmlFor={campo.name}
+              className="block text-sm font-semibold text-gray-700 mb-1"
+            >
+              {campo.label}
             </label>
+
             <input
-              type={field === "email" ? "email" : "text"}
-              name={field}
-              value={form[field]}
+              id={campo.name}
+              type={campo.type}
+              name={campo.name}
+              value={form[campo.name]}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md text-gray-800
-                         focus:ring-2 focus:ring-lime-500"
+              placeholder={campo.placeholder}
+              aria-invalid={!!errors[campo.name]}
+              aria-describedby={`${campo.name}-error`}
+              className={`w-full p-2 border rounded-md text-gray-800
+                placeholder-gray-400
+                focus:ring-2 focus:ring-lime-500
+                ${
+                  errors[campo.name]
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300"
+                }`}
               disabled={isSaving}
             />
+
+            {errors[campo.name] && (
+              <p
+                id={`${campo.name}-error`}
+                className="text-red-600 text-xs mt-1"
+              >
+                {errors[campo.name]}
+              </p>
+            )}
           </div>
         ))}
       </div>
 
-      {/* ERROR */}
-      {error && (
-        <p className="text-red-600 text-sm mt-3 text-center">{error}</p>
-      )}
-
-      {/* ACCIONES */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6">
+      <div className="flex flex-col sm:flex-row justify-end gap-2 mt-8">
         <button
           type="button"
-          className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
+          className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
           onClick={onClose}
           disabled={isSaving}
         >
@@ -153,13 +239,13 @@ const CrearCabeceraModal = ({ onClose, actualizarCabeceras }) => {
 
         <button
           type="button"
-          className={`px-4 py-2 rounded-lg text-white ${
-            isSaving
-              ? "bg-green-300 cursor-not-allowed"
-              : "bg-green-500 hover:bg-green-600"
-          }`}
           onClick={handleSubmit}
           disabled={isSaving}
+          className={`px-4 py-2 rounded-lg text-white transition ${
+            isSaving
+              ? "bg-green-300 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+          }`}
         >
           {isSaving ? "Guardando..." : "Guardar"}
         </button>
