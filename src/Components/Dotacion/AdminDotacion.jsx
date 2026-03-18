@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
-import FacturaModal from "../Facturas/FacturaModal";
 import { FaTshirt } from "react-icons/fa";
 import Swal from "sweetalert2";
+import crud from "../../conexiones/crud";
 
 const Dotacion = () => {
   const navigate = useNavigate();
@@ -19,14 +19,6 @@ const Dotacion = () => {
   // Modal edición
   const [showModal, setShowModal] = useState(false);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
-
-  // Factura Modal
-  const [isModalFacturaOpen, setIsModalFacturaOpen] = useState(false);
-
-  // Leer usuario logueado
-  const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "{}");
-  const usuarioNombre = usuarioGuardado?.nombre || "";
-  const usuarioRol = usuarioGuardado?.rol || "";
 
   // ---------------------------------------------------
   // 🔐 AUTENTICACIÓN
@@ -50,67 +42,54 @@ const Dotacion = () => {
   }, []);
 
   const fetchCategorias = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.GET("/api/dotacion");
 
-      const response = await fetch("http://localhost:4000/api/dotacion", {
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setCategorias(data.categorias);
-      } else {
-        console.log("Error: ", data.msg);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
+    if (response?.categorias) {
+      setCategorias(response.categorias);
+    } else if (response?.msg) {
+      console.log("Error:", response.msg);
+    } else {
+      console.log("No se pudieron cargar las categorías");
     }
-  };
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
 
   // ---------------------------------------------------
-  // 🗑️ ELIMINAR CATEGORÍA
-  // ---------------------------------------------------
-  const eliminarCategoria = async (id) => {
-    const confirm = await Swal.fire({
-      title: "¿Eliminar categoría?",
-      text: "Esta acción no se puede revertir",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
+// 🗑️ ELIMINAR CATEGORÍA
+// ---------------------------------------------------
+const eliminarCategoria = async (id) => {
+  const confirm = await Swal.fire({
+    title: "¿Eliminar categoría?",
+    text: "Esta acción no se puede revertir",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (!confirm.isConfirmed) return;
+  if (!confirm.isConfirmed) return;
 
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const response = await crud.DELETE(`/api/dotacion/${id}`);
 
-      const response = await fetch(`http://localhost:4000/api/dotacion/${id}`, {
-        method: "DELETE",
-        headers: {
-          "x-auth-token": token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", data.msg || "No se pudo eliminar", "error");
-        return;
-      }
-
-      Swal.fire("Eliminado", "Categoría eliminada", "success");
-      fetchCategorias();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      Swal.fire("Error", response.msg || "No se pudo eliminar", "error");
+      return;
     }
-  };
+
+    Swal.fire("Eliminado", "Categoría eliminada", "success");
+    fetchCategorias();
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
 
   // ---------------------------------------------------
   // ✏️ MODAL EDICIÓN
@@ -125,46 +104,38 @@ const Dotacion = () => {
     setCategoriaEdit(null);
   };
 
-  // -------------------------------------------------------
-  // 💾 GUARDAR CAMBIOS DE EDICIÓN
-  // -------------------------------------------------------
-  const guardarCambios = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `http://localhost:4000/api/dotacion/${categoriaEdit._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify({
-            nombre: categoriaEdit.nombre,
-            imagen: categoriaEdit.imagen,
-          }),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-        return;
+ // -------------------------------------------------------
+// 💾 GUARDAR CAMBIOS DE EDICIÓN
+// -------------------------------------------------------
+const guardarCambios = async () => {
+  try {
+    const response = await crud.PUT(
+      `/api/dotacion/${categoriaEdit._id}`,
+      {
+        nombre: categoriaEdit.nombre,
+        imagen: categoriaEdit.imagen,
       }
+    );
 
-      Swal.fire(
-        "Actualizado",
-        "La categoría fue editada correctamente",
-        "success",
-      );
-      cerrarModal();
-      fetchCategorias();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    if (response?.msg && response.msg.toLowerCase().includes("error")) {
+      Swal.fire("Error", response.msg || "No se pudo actualizar", "error");
+      return;
     }
-  };
+
+    Swal.fire(
+      "Actualizado",
+      "La categoría fue editada correctamente",
+      "success"
+    );
+
+    cerrarModal();
+    fetchCategorias();
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+  }
+};
+
 
   // -------------------------------------------------------
   // 📌 RENDERIZADO
@@ -184,29 +155,20 @@ const Dotacion = () => {
       >
         <div className="max-w-6xl mx-auto">
           {/* Título */}
-          <div className="relative mb-6 flex flex-col items-center min-h-24 justify-center">
+          <div className="relative mb-6 flex flex-col items-center">
             <p className="text-lime-900 font-bold text-2xl sm:text-3xl text-center italic">
               Lista Categorías de Dotación
             </p>
 
-            <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
-              <button
-                onClick={() => setIsModalFacturaOpen(true)}
-                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
-                            gap-2 text-white bg-blue-500 px-4 py-2 rounded-2xl hover:bg-blue-600"
-              >
-                🧾 Nueva Factura
-              </button>
-
-              <button
-                onClick={handleCrearCategoria}
-                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
-                gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600"
-              >
-                <FaTshirt size={20} />
-                Crear Categoría
-              </button>
-            </div>
+            <button
+              onClick={handleCrearCategoria}
+              className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+              gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600
+              sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2"
+            >
+              <FaTshirt />
+              Crear Categoría
+            </button>
           </div>
 
           {/* LISTADO */}
@@ -313,15 +275,6 @@ const Dotacion = () => {
           </div>
         </div>
       )}
-
-      {/* ✅ Modal de Nueva Factura */}
-      <FacturaModal
-        isOpen={isModalFacturaOpen}
-        onClose={() => setIsModalFacturaOpen(false)}
-        onFacturaCreada={() => {}}
-        usuarioRol={usuarioRol}
-        usuarioNombre={usuarioNombre}
-      />
     </div>
   );
 };
