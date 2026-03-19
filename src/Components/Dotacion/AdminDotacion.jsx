@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SidebarAdmin from "../Sidebar/SidebarAdmin";
-import { FaTshirt } from "react-icons/fa";
+import { MdCategory } from "react-icons/md";
 import Swal from "sweetalert2";
 import crud from "../../conexiones/crud";
+import FacturaModal from "../Facturas/FacturaModal";
 
 const Dotacion = () => {
   const navigate = useNavigate();
@@ -19,6 +20,15 @@ const Dotacion = () => {
   // Modal edición
   const [showModal, setShowModal] = useState(false);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
+
+   // Factura Modal
+    const [isModalFacturaOpen, setIsModalFacturaOpen] = useState(false);
+
+  // Leer usuario logueado
+  const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const usuarioNombre = usuarioGuardado?.nombre || "";
+  const usuarioRol = usuarioGuardado?.rol || "";
+
 
   // ---------------------------------------------------
   // 🔐 AUTENTICACIÓN
@@ -160,15 +170,27 @@ const guardarCambios = async () => {
               Lista Categorías de Dotación
             </p>
 
-            <button
-              onClick={handleCrearCategoria}
-              className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
-              gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600
-              sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2"
-            >
-              <FaTshirt />
-              Crear Categoría
-            </button>
+            
+
+            <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
+                          
+                          <button
+                            onClick={() => setIsModalFacturaOpen(true)}
+                            className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+                                        gap-2 text-white bg-blue-500 px-4 py-2 rounded-2xl hover:bg-blue-600"
+                          >
+                            🧾 Nueva Factura
+                          </button>
+            
+                          <button
+                            onClick={handleCrearCategoria}
+                            className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+                                        gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600"
+                          >
+                            <MdCategory size={20} />
+                            Crear Categoría
+                          </button>
+                        </div>
           </div>
 
           {/* LISTADO */}
@@ -275,6 +297,14 @@ const guardarCambios = async () => {
           </div>
         </div>
       )}
+      {/* ✅ Modal de Nueva Factura */}
+      <FacturaModal
+        isOpen={isModalFacturaOpen}
+        onClose={() => setIsModalFacturaOpen(false)}
+        onFacturaCreada={() => {}}
+        usuarioRol={usuarioRol}
+        usuarioNombre={usuarioNombre}
+      />
     </div>
   );
 };
