@@ -121,14 +121,11 @@ const Repuestos = () => {
       }
     );
 
-    if (result?.msg) {
-      Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-      return;
-    }
+    // 🔥 Ya NO validamos por msg (porque también viene en éxito)
 
     Swal.fire(
       "Actualizado",
-      "La categoría fue editada correctamente",
+      result?.msg || "La categoría fue editada correctamente",
       "success"
     );
 
@@ -136,7 +133,11 @@ const Repuestos = () => {
     cargarCategorias();
 
   } catch (error) {
-    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+    Swal.fire(
+      "Error",
+      error?.response?.data?.msg || "No se pudo actualizar",
+      "error"
+    );
   }
 };
 
