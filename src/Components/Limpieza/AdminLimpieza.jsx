@@ -166,7 +166,7 @@ const guardarCambios = async () => {
           {/* Título */}
           <div className="relative mb-6 flex flex-col items-center">
             <p className="text-lime-900 font-bold text-2xl sm:text-3xl text-center italic">
-              Lista Categorías de Limpieza
+              Lista Categorías de Insumos
             </p>
 
             <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
