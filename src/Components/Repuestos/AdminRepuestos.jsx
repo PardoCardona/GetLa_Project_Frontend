@@ -111,42 +111,35 @@ const Repuestos = () => {
   // 💾 GUARDAR CAMBIOS
   // -------------------------------------------------------
   const guardarCambios = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
 
-      const response = await fetch(
-        `http://localhost:4000/api/repuestos/${categoriaEdit._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify({
-            nombre: categoriaEdit.nombre,
-            imagen: categoriaEdit.imagen,
-          }),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-        return;
+    const result = await crud.PUT(
+      `/api/repuestos/${categoriaEdit._id}`,
+      {
+        nombre: categoriaEdit.nombre,
+        imagen: categoriaEdit.imagen,
       }
+    );
 
-      Swal.fire(
-        "Actualizado",
-        "La categoría fue editada correctamente",
-        "success",
-      );
-      cerrarModal();
-      cargarCategorias();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
-    }
-  };
+    // 🔥 Ya NO validamos por msg (porque también viene en éxito)
+
+    Swal.fire(
+      "Actualizado",
+      result?.msg || "La categoría fue editada correctamente",
+      "success"
+    );
+
+    cerrarModal();
+    cargarCategorias();
+
+  } catch (error) {
+    Swal.fire(
+      "Error",
+      error?.response?.data?.msg || "No se pudo actualizar",
+      "error"
+    );
+  }
+};
 
   // -------------------------------------------------------
   // 📌 RENDER
