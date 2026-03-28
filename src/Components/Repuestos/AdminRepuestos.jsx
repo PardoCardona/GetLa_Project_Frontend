@@ -111,35 +111,35 @@ const Repuestos = () => {
   // 💾 GUARDAR CAMBIOS
   // -------------------------------------------------------
   const guardarCambios = async () => {
-  try {
-
-    const result = await crud.PUT(
-      `/api/repuestos/${categoriaEdit._id}`,
-      {
+    try {
+      const result = await crud.PUT(`/api/repuestos/${categoriaEdit._id}`, {
         nombre: categoriaEdit.nombre,
         imagen: categoriaEdit.imagen,
+      });
+
+      // 🔥 Validación extra (por si backend responde raro)
+      if (!result) {
+        throw new Error("Respuesta vacía del servidor");
       }
-    );
 
-    // 🔥 Ya NO validamos por msg (porque también viene en éxito)
+      // 🔥 Ya NO validamos por msg (porque también viene en éxito)
 
-    Swal.fire(
-      "Actualizado",
-      result?.msg || "La categoría fue editada correctamente",
-      "success"
-    );
+      Swal.fire(
+        "Actualizado",
+        result?.msg || "La categoría fue editada correctamente",
+        "success",
+      );
 
-    cerrarModal();
-    cargarCategorias();
-
-  } catch (error) {
-    Swal.fire(
-      "Error",
-      error?.response?.data?.msg || "No se pudo actualizar",
-      "error"
-    );
-  }
-};
+      cerrarModal();
+      cargarCategorias();
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error?.response?.data?.msg || "No se pudo actualizar",
+        "error",
+      );
+    }
+  };
 
   // -------------------------------------------------------
   // 📌 RENDER
@@ -164,7 +164,6 @@ const Repuestos = () => {
             </p>
 
             <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
-              
               <button
                 onClick={() => setIsModalFacturaOpen(true)}
                 className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center

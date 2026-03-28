@@ -21,14 +21,13 @@ const Dotacion = () => {
   const [showModal, setShowModal] = useState(false);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
 
-   // Factura Modal
-    const [isModalFacturaOpen, setIsModalFacturaOpen] = useState(false);
+  // Factura Modal
+  const [isModalFacturaOpen, setIsModalFacturaOpen] = useState(false);
 
   // Leer usuario logueado
   const usuarioGuardado = JSON.parse(localStorage.getItem("usuario") || "{}");
   const usuarioNombre = usuarioGuardado?.nombre || "";
   const usuarioRol = usuarioGuardado?.rol || "";
-
 
   // ---------------------------------------------------
   // 🔐 AUTENTICACIÓN
@@ -52,54 +51,52 @@ const Dotacion = () => {
   }, []);
 
   const fetchCategorias = async () => {
-  try {
-    const response = await crud.GET("/api/dotacion");
+    try {
+      const response = await crud.GET("/api/dotacion");
 
-    if (response?.categorias) {
-      setCategorias(response.categorias);
-    } else if (response?.msg) {
-      console.log("Error:", response.msg);
-    } else {
-      console.log("No se pudieron cargar las categorías");
+      if (response?.categorias) {
+        setCategorias(response.categorias);
+      } else if (response?.msg) {
+        console.log("Error:", response.msg);
+      } else {
+        console.log("No se pudieron cargar las categorías");
+      }
+    } catch (error) {
+      console.log("Error:", error);
     }
-  } catch (error) {
-    console.log("Error:", error);
-  }
-};
-
+  };
 
   // ---------------------------------------------------
-// 🗑️ ELIMINAR CATEGORÍA
-// ---------------------------------------------------
-const eliminarCategoria = async (id) => {
-  const confirm = await Swal.fire({
-    title: "¿Eliminar categoría?",
-    text: "Esta acción no se puede revertir",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar",
-  });
+  // 🗑️ ELIMINAR CATEGORÍA
+  // ---------------------------------------------------
+  const eliminarCategoria = async (id) => {
+    const confirm = await Swal.fire({
+      title: "¿Eliminar categoría?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
 
-  if (!confirm.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-  try {
-    const response = await crud.DELETE(`/api/dotacion/${id}`);
+    try {
+      const response = await crud.DELETE(`/api/dotacion/${id}`);
 
-    if (response?.msg && response.msg.toLowerCase().includes("error")) {
-      Swal.fire("Error", response.msg || "No se pudo eliminar", "error");
-      return;
+      if (response?.msg && response.msg.toLowerCase().includes("error")) {
+        Swal.fire("Error", response.msg || "No se pudo eliminar", "error");
+        return;
+      }
+
+      Swal.fire("Eliminado", "Categoría eliminada", "success");
+      fetchCategorias();
+    } catch (error) {
+      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
     }
-
-    Swal.fire("Eliminado", "Categoría eliminada", "success");
-    fetchCategorias();
-
-  } catch (error) {
-    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
-  }
-};
+  };
 
   // ---------------------------------------------------
   // ✏️ MODAL EDICIÓN
@@ -114,38 +111,40 @@ const eliminarCategoria = async (id) => {
     setCategoriaEdit(null);
   };
 
- // -------------------------------------------------------
-// 💾 GUARDAR CAMBIOS DE EDICIÓN
-// -------------------------------------------------------
-const guardarCambios = async () => {
-  try {
-    const response = await crud.PUT(
-      `/api/dotacion/${categoriaEdit._id}`,
-      {
+  // -------------------------------------------------------
+  // 💾 GUARDAR CAMBIOS DE EDICIÓN
+  // -------------------------------------------------------
+  const guardarCambios = async () => {
+    try {
+      const response = await crud.PUT(`/api/dotacion/${categoriaEdit._id}`, {
         nombre: categoriaEdit.nombre,
         imagen: categoriaEdit.imagen,
+      });
+
+      // 🔥 Validación extra (por si backend responde raro)
+      if (!response) {
+        throw new Error("Respuesta vacía del servidor");
       }
-    );
 
-    if (response?.msg && response.msg.toLowerCase().includes("error")) {
-      Swal.fire("Error", response.msg || "No se pudo actualizar", "error");
-      return;
+      // 🔥 Ya NO validamos por msg (porque también viene en éxito)
+
+      Swal.fire(
+        "Actualizado",
+        response?.msg || "La categoría fue editada correctamente",
+        "success",
+      );
+
+      cerrarModal();
+      fetchCategorias();
+      
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error?.response?.data?.msg || "No se pudo actualizar",
+        "error",
+      );
     }
-
-    Swal.fire(
-      "Actualizado",
-      "La categoría fue editada correctamente",
-      "success"
-    );
-
-    cerrarModal();
-    fetchCategorias();
-
-  } catch (error) {
-    Swal.fire("Error", "No se pudo conectar con el servidor", "error");
-  }
-};
-
+  };
 
   // -------------------------------------------------------
   // 📌 RENDERIZADO
@@ -170,27 +169,24 @@ const guardarCambios = async () => {
               Lista Categorías de Dotación
             </p>
 
-            
-
             <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0 sm:py-2">
-                          
-                          <button
-                            onClick={() => setIsModalFacturaOpen(true)}
-                            className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+              <button
+                onClick={() => setIsModalFacturaOpen(true)}
+                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
                                         gap-2 text-white bg-blue-500 px-4 py-2 rounded-2xl hover:bg-blue-600"
-                          >
-                            🧾 Nueva Factura
-                          </button>
-            
-                          <button
-                            onClick={handleCrearCategoria}
-                            className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
+              >
+                🧾 Nueva Factura
+              </button>
+
+              <button
+                onClick={handleCrearCategoria}
+                className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center
                                         gap-2 text-green-800 bg-green-500 px-4 py-2 rounded-2xl hover:bg-green-600"
-                          >
-                            <MdCategory size={20} />
-                            Crear Categoría
-                          </button>
-                        </div>
+              >
+                <MdCategory size={20} />
+                Crear Categoría
+              </button>
+            </div>
           </div>
 
           {/* LISTADO */}
