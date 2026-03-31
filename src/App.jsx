@@ -27,6 +27,7 @@ import Mantencion from "./Components/Mantencion/AdminMantencion";
 import Repuestos from "./Components/Repuestos/AdminRepuestos";
 import Dotacion from "./Components/Dotacion/AdminDotacion";
 import Limpieza from "./Components/Limpieza/AdminLimpieza";
+import Regular from "./Components/Regular/AdminRegular";
 
 // --------------------
 // Repuestos
@@ -113,6 +114,7 @@ function App() {
         <Route path="/repuestos" element={<Repuestos />} />
         <Route path="/dotacion" element={<Dotacion />} />
         <Route path="/limpieza" element={<Limpieza />} />
+        <Route path="/regular" element={<Regular />} />
 
         {/* ==================== PANELES POR ÁREA ==================== */}
         <Route path="/reset-password/:token" element={<ResetPassword />} />
