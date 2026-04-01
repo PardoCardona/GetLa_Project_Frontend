@@ -34,6 +34,7 @@ import Regular from "./Components/Regular/AdminRegular";
 // --------------------
 import CategoriaRepuesto from "./Components/Repuestos/CategoriaRepuesto";
 import ListaRepuestos from "./Components/Repuestos/ListaRepuestos";
+import RegularRepuestos from "./Components/Regular/RegularRepuestos";
 
 // --------------------
 // Dotación
@@ -87,6 +88,10 @@ function App() {
         <Route
           path="/AdminRepuestos/lista/:categoriaId"
           element={<ListaRepuestos />}
+        />
+        <Route
+          path="/regular/repuestos/:categoriaId"
+          element={<RegularRepuestos />}
         />
 
         {/* ==================== DOTACIÓN ==================== */}

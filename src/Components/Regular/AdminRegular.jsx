@@ -105,7 +105,7 @@ const AdminRegular = () => {
                   <p className="font-bold text-green-800">{cat.nombre}</p>
 
                   <button
-                    onClick={() => navigate(`/AdminRepuestos/lista/${cat._id}`)}
+                    onClick={() => navigate(`/regular/repuestos/${cat._id}`)}
                     className="mt-3 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800"
                   >
                     Ver Repuestos

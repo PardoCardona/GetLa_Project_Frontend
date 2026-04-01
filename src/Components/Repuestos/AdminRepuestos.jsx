@@ -112,39 +112,32 @@ const Repuestos = () => {
   // -------------------------------------------------------
   const guardarCambios = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const result = await crud.PUT(`/api/repuestos/${categoriaEdit._id}`, {
+        nombre: categoriaEdit.nombre,
+        imagen: categoriaEdit.imagen,
+      });
 
-      const response = await fetch(
-        `http://localhost:4000/api/repuestos/${categoriaEdit._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": token,
-          },
-          body: JSON.stringify({
-            nombre: categoriaEdit.nombre,
-            imagen: categoriaEdit.imagen,
-          }),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        Swal.fire("Error", result.msg || "No se pudo actualizar", "error");
-        return;
+      // 🔥 Validación extra (por si backend responde raro)
+      if (!result) {
+        throw new Error("Respuesta vacía del servidor");
       }
+
+      // 🔥 Ya NO validamos por msg (porque también viene en éxito)
 
       Swal.fire(
         "Actualizado",
-        "La categoría fue editada correctamente",
+        result?.msg || "La categoría fue editada correctamente",
         "success",
       );
+
       cerrarModal();
       cargarCategorias();
     } catch (error) {
-      Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+      Swal.fire(
+        "Error",
+        error?.response?.data?.msg || "No se pudo actualizar",
+        "error",
+      );
     }
   };
 
