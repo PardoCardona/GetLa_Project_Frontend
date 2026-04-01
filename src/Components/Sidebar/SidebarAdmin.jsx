@@ -8,6 +8,7 @@ import {
   FaUserTie,
   FaFileInvoice,
   FaUsers,
+  FaUserCog,
 } from "react-icons/fa";
 import { MdBuild, MdReceiptLong } from "react-icons/md";
 import { IoSettingsSharp } from "react-icons/io5";
@@ -82,12 +83,13 @@ const SidebarAdmin = ({ isOpen, toggleSidebar }) => {
       "insumos",
       "limpieza",
       "mantencion",
+      "regular",
     ],
     adminrep: ["repuestos"],
     admindot: ["insumos"],
     adminlimp: ["limpieza"],
     adminmant: ["mantencion"],
-    regular: [],
+    adminregular: ["regular"],
   };
 
   const permisos = permisosPorRol[rol] || [];
@@ -210,6 +212,12 @@ const SidebarAdmin = ({ isOpen, toggleSidebar }) => {
             icon: <MdBuild />,
             label: "Mantención",
             path: "/mantencion",
+          },
+          {
+            key: "regular",
+            icon: <FaUserCog />,
+            label: "Supervisor",
+            path: "/regular",
           },
         ].map(({ key, icon, label, path }) => (
           <div

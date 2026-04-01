@@ -67,8 +67,8 @@ const Login = () => {
         case "adminmant":
           navigate("/mantencion");
           break;
-        case "regular":
-          navigate("/repuestos");
+        case "adminregular":
+          navigate("/regular");
           break;
         default:
           Swal.fire(

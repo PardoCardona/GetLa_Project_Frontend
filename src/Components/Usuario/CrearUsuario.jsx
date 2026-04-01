@@ -20,9 +20,19 @@ const schema = yup.object().shape({
     )
     .required("El correo es obligatorio"),
   rol: yup
-    .string()
-    .oneOf(["admin", "regular"], "El rol debe ser 'admin' o 'regular'")
-    .required("El rol es obligatorio"),
+  .string()
+  .oneOf(
+    [
+      "admin",
+      "adminrep",
+      "admindot",
+      "adminlimp",
+      "adminmant",
+      "adminregular",
+    ],
+    "Rol no válido"
+  )
+  .required("El rol es obligatorio"),
   password: yup
     .string()
     .min(5, "La contraseña debe tener al menos 5 caracteres")
@@ -169,7 +179,7 @@ const CrearUsuario = () => {
                 <option value="admindot">Jefe Bodega de Dotación</option>
                 <option value="adminlimp">Jefe Bodega de Limpieza</option>
                 <option value="adminmant">Jefe de Mantención</option>
-                <option value="regular">Supervisor</option>
+                <option value="adminregular">Supervisor</option>
               </select>
             </div>
 
