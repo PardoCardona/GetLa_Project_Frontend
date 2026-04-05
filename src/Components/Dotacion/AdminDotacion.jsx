@@ -164,7 +164,7 @@ const Dotacion = () => {
       >
         <div className="max-w-6xl mx-auto">
           {/* Título */}
-          <div className="relative mb-6 flex flex-col items-center">
+          <div className="relative mb-6 flex flex-col items-center min-h-24 justify-center">
             <p className="text-lime-900 font-bold text-2xl sm:text-3xl text-center italic">
               Lista Categorías de Dotación
             </p>
