@@ -70,9 +70,14 @@ const AdminRegular = () => {
         <div className="max-w-6xl mx-auto">
           {/* HEADER */}
           <div className="relative mb-6 flex flex-col items-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-green-800 italic text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-green-800 italic text-center">
               Categorías de Repuestos
-            </h1>
+            </p>
+
+            {/* 🟡 Indicador de rol */}
+            <p className="mt-2 text-xs text-gray-700 italic">
+              Modo Supervisor (solo lectura)
+            </p>
 
             <div className="flex flex-col gap-2 sm:absolute sm:right-0 sm:top-0">
               <button

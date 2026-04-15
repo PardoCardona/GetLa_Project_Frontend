@@ -218,9 +218,9 @@ const handleEliminar = async (id) => {
       >
         <div className="max-w-6xl mx-auto">
           <div className="relative mb-6 text-center">
-            <h2 className="text-3xl font-bold text-green-900 italic">
+            <p className="text-3xl font-bold text-green-900 italic">
               Productos de Dotación
-            </h2>
+            </p>
             {categoria && (
               <p className="text-lg font-semibold text-green-800">
                 Categoría: {categoria.nombre}
