@@ -78,9 +78,9 @@ const RegularRepuestos = () => {
         <div className="max-w-6xl mx-auto">
           {/* HEADER */}
           <div className="mb-6 text-center">
-            <h2 className="text-3xl font-bold text-green-900 italic">
+            <p className="text-3xl font-bold text-green-900 italic">
               Productos de Repuestos
-            </h2>
+            </p>
 
             {categoria && (
               <p className="text-lg font-semibold text-green-800">

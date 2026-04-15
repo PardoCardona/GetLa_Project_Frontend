@@ -238,9 +238,9 @@ const Factura = () => {
         <div className="max-w-7xl mx-auto bg-green-200 rounded-lg">
           {/* HEADER */}
           <div className="px-4 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <h1 className="text-gray-800 font-bold text-lg md:text-xl">
+            <p className="text-gray-800 font-bold text-lg md:text-xl">
               GESTIÓN DE FACTURAS
-            </h1>
+            </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <input

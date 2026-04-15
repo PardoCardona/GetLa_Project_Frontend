@@ -23,7 +23,11 @@ import ActualizarUsuario from "./Components/Usuario/ActualizarUsuario";
 import Cabecera from "./Components/Cabeceras/Cabecera";
 import Clientes from "./Components/Clientes/Clientes";
 import Factura from "./Components/Facturas/Factura";
-import Mantencion from "./Components/Mantencion/AdminMantencion";
+
+// 🔥 MANTENCIÓN (NUEVO)
+import BusesPage from "./Components/Mantencion/pages/BusesPage";
+import BusDetailPage from "./Components/Mantencion/pages/BusDetailPage";
+
 import Repuestos from "./Components/Repuestos/AdminRepuestos";
 import Dotacion from "./Components/Dotacion/AdminDotacion";
 import Limpieza from "./Components/Limpieza/AdminLimpieza";
@@ -49,7 +53,7 @@ import CategoriaLimpieza from "./Components/Limpieza/CategoriaLimpieza";
 import ListaLimpieza from "./Components/Limpieza/ListaLimpieza";
 
 // --------------------
-// Recuperacion_contraseña
+// Recuperacion contraseña
 // --------------------
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -79,6 +83,10 @@ function App() {
 
         {/* ==================== Facturas ==================== */}
         <Route path="/facturas" element={<Factura />} />
+
+        {/* ==================== MANTENCIÓN (🔥 NUEVO) ==================== */}
+        <Route path="/mantencion" element={<BusesPage />} />
+        <Route path="/mantencion/:id" element={<BusDetailPage />} />
 
         {/* ==================== REPUESTOS ==================== */}
         <Route
@@ -115,13 +123,12 @@ function App() {
         />
 
         {/* ==================== PANELES POR ÁREA ==================== */}
-        <Route path="/mantencion" element={<Mantencion />} />
         <Route path="/repuestos" element={<Repuestos />} />
         <Route path="/dotacion" element={<Dotacion />} />
         <Route path="/limpieza" element={<Limpieza />} />
         <Route path="/regular" element={<Regular />} />
 
-        {/* ==================== PANELES POR ÁREA ==================== */}
+        {/* ==================== RECUPERACIÓN ==================== */}
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
