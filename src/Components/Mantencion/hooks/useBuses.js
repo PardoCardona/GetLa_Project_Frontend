@@ -6,10 +6,13 @@ export const useBuses = () => {
     revalidateOnFocus: false,
   });
 
+  // Fuerza re-fetch inmediato limpiando el caché primero
+  const refresh = () => mutate(undefined, { revalidate: true });
+
   return {
     buses: Array.isArray(data) ? data : data?.buses || [],
     loading: !data && !error,
     error,
-    refresh: mutate,
+    refresh,
   };
 };
