@@ -43,6 +43,13 @@ export default function BusCard({ bus, onClick, onEditar, onEliminar }) {
         <p>
           <strong>Año:</strong> {bus.anio || "—"}
         </p>
+         {/* Texto nuevo */}
+         <p>
+        <strong>Revisión Tec.:</strong>{" "}
+        {bus.fechaRevisionTecnicomecanica
+          ? bus.fechaRevisionTecnicomecanica.split("T")[0].split("-").reverse().join("-")
+          : "Sin fecha"}
+      </p>
       </div>
 
       {/* ESTADO */}

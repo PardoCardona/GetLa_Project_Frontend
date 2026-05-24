@@ -19,6 +19,8 @@ const FORM_INICIAL = {
   marca: "",
   modelo: "",
   anio: "",
+  //nuevo
+  fechaRevisionTecnicomecanica: "",
 };
 
 // ─────────────────────────────────────────────
@@ -97,6 +99,18 @@ function BusFormModal({ titulo, form, setForm, onGuardar, onCerrar }) {
           max={new Date().getFullYear() + 1}
           value={form.anio}
           onChange={(e) => setForm({ ...form, anio: e.target.value })}
+        />
+         {/* Campo nuevo */}
+         <Campo
+          label="Vencimiento revisión tecnicomecánica"
+          type="date"
+          value={form.fechaRevisionTecnicomecanica}
+          onChange={(e) =>
+          setForm({
+              ...form,
+           fechaRevisionTecnicomecanica: e.target.value,
+            })
+          }
         />
 
         <p className="text-[10px] text-gray-500 mt-2">* Campos obligatorios</p>
@@ -194,6 +208,10 @@ export default function BusesPage() {
       marca: bus.marca || "",
       modelo: bus.modelo || "",
       anio: bus.anio ? String(bus.anio) : "",
+      //Campo nuevo
+      fechaRevisionTecnicomecanica: bus.fechaRevisionTecnicomecanica
+    ? bus.fechaRevisionTecnicomecanica.split("T")[0]
+    : "",
     });
     setModalEditar(true);
   };
