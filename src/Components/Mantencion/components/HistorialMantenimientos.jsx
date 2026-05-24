@@ -36,14 +36,15 @@ function TipoBadge({ tipo }) {
   );
 }
 
-// Formatea fecha legible
+// Formato fecha actualizado
 function formatFecha(fecha) {
   if (!fecha) return "—";
-  return new Date(fecha).toLocaleDateString("es-CL", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+
+  return fecha
+    .split("T")[0]
+    .split("-")
+    .reverse()
+    .join("-");
 }
 
 export default function HistorialMantenimientos({ data, onRefresh }) {
