@@ -149,7 +149,7 @@ const FacturaModal = ({
     }
     setProductosSeleccionados((prev) => [
       ...prev,
-      { ...producto, cantidad: 1, descuento: 0, iva: 19 },
+      { ...producto, cantidad: 1, descuento: 0, iva: 0 },
     ]);
     setBusquedaProd("");
     setProductosSugeridos([]);
@@ -176,7 +176,7 @@ const FacturaModal = ({
       const base = p.precioVenta * p.cantidad;
       const desc = base * (p.descuento / 100);
       const baseDesc = base - desc;
-      const ivaCalc = baseDesc * (p.iva / 100);
+      const ivaCalc = 0;
       const totalProd = baseDesc + ivaCalc;
 
       subtotal += base;
@@ -226,8 +226,7 @@ const FacturaModal = ({
         const base = p.precioVenta * p.cantidad;
         const desc = base * (p.descuento / 100);
         const baseDesc = base - desc;
-        const ivaCalc = baseDesc * (p.iva / 100);
-        const totalProd = baseDesc + ivaCalc;
+        const totalProd = baseDesc;
 
         return {
           producto: p._id,
@@ -236,7 +235,7 @@ const FacturaModal = ({
           cantidad: p.cantidad,
           precio: p.precioVenta,
           descuento: p.descuento,
-          iva: p.iva,
+          iva: 0,
           subtotal: baseDesc,
           total: totalProd,
         };
@@ -260,7 +259,7 @@ const FacturaModal = ({
         productos: productosFormateados,
         subtotal,
         descuento: descuentoTotal,
-        iva: ivaTotal,
+        iva: 0,
         total,
       });
 
@@ -544,9 +543,7 @@ const FacturaModal = ({
               <th>Código</th>
               <th>Producto</th>
               <th>Cant</th>
-              <th>Precio</th>
-              <th>%Desc</th>
-              <th>%IVA</th>
+              <th>Precio</th>   
               <th>Total</th>
               <th></th>
             </tr>
@@ -554,10 +551,9 @@ const FacturaModal = ({
           <tbody>
             {productosSeleccionados.map((p) => {
               const base = p.precioVenta * p.cantidad;
-              const desc = base * (p.descuento / 100);
+              const desc = 0;
               const baseDesc = base - desc;
-              const iva = baseDesc * (p.iva / 100);
-              const totalProd = baseDesc + iva;
+              const totalProd = baseDesc;
               return (
                 <tr key={p._id} className="text-center border-t">
                   <td>{p.referencia}</td>
@@ -575,30 +571,8 @@ const FacturaModal = ({
                     />
                   </td>
                   <td>{p.precioVenta}</td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={p.descuento}
-                      onChange={(e) =>
-                        actualizarProducto(p._id, "descuento", e.target.value)
-                      }
-                      className="w-16 border rounded text-center"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={p.iva}
-                      onChange={(e) =>
-                        actualizarProducto(p._id, "iva", e.target.value)
-                      }
-                      className="w-16 border rounded text-center"
-                    />
-                  </td>
+                  
+
                   <td>${totalProd.toFixed(2)}</td>
                   <td>
                     <button
@@ -617,8 +591,8 @@ const FacturaModal = ({
         {/* TOTALES */}
         <div className="text-right space-y-1 mb-4 font-semibold">
           <p>Subtotal: ${subtotal.toFixed(2)}</p>
-          <p>Descuento: ${descuentoTotal.toFixed(2)}</p>
-          <p>IVA: ${ivaTotal.toFixed(2)}</p>
+          
+
           <p className="text-lg text-green-600">TOTAL: ${total.toFixed(2)}</p>
         </div>
 
